@@ -443,6 +443,16 @@
     position: relative; z-index: 0; font-family: "Great Vibes", cursive; font-weight: 400;
     font-size: 1.45em; line-height: .6; color: rgba(201,138,138,.42); margin: .12em .12em 0; transform-origin: center;
   }
+  /* breathing room */
+  .story .closing { margin-top: 34px; padding-top: 24px; border-top: 1px solid rgba(184,146,74,.25); }
+  /* only the number sits inside the ring; its label hangs just below the circle */
+  .countdown { gap: 12px; margin-bottom: 24px; }
+  .cd b { font-size: clamp(20px, 5.6vw, 27px); }
+  .cd small { position: absolute; top: 100%; left: 0; right: 0; margin-top: 7px; font-size: 12px; text-align: center; }
+  .footer .sig { margin: 8px 0 0; }
+  .footer .eyebrow { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 22px; }
+  .footer .eyebrow::before, .footer .eyebrow::after { content: ""; width: 34px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
+  .footer .eyebrow::after { transform: scaleX(-1); }
   .env-letter .mono i, .footer .sig i { font-family: "Great Vibes", cursive; font-weight: 400; font-size: 1.35em; color: var(--rose); margin: 0 .05em; line-height: 0; vertical-align: -.08em; }
 
   @media (prefers-reduced-motion: reduce) {
