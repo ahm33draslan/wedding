@@ -34,13 +34,17 @@
     min-height: 100vh;
     font-family: "Bodoni Moda", serif;
     color: var(--ink);
-    background:
-      radial-gradient(ellipse at 15% 0%, rgba(236, 201, 195, .45), transparent 55%),
-      radial-gradient(ellipse at 90% 100%, rgba(226, 200, 143, .3), transparent 50%),
-      linear-gradient(180deg, var(--ivory), var(--linen)) fixed;
     background-color: var(--ivory);
     overflow-x: hidden;
     -webkit-tap-highlight-color: transparent;
+  }
+  /* page background on its own fixed layer: painted once, never repainted while scrolling */
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(ellipse at 15% 0%, rgba(236, 201, 195, .45), transparent 55%),
+      radial-gradient(ellipse at 90% 100%, rgba(226, 200, 143, .3), transparent 50%),
+      linear-gradient(180deg, var(--ivory), var(--linen));
   }
   ::selection { background: var(--gold); color: #fff; }
 
@@ -229,8 +233,7 @@
 
   .card {
     position: relative; width: 100%; border-radius: 22px; padding: 44px 26px;
-    background: rgba(255, 253, 249, .72);
-    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    background: rgba(255, 253, 249, .86);
     border: 1px solid rgba(184,146,74,.25);
     box-shadow: 0 24px 50px -24px rgba(58,42,46,.25);
   }
@@ -283,7 +286,7 @@
     padding: 14px 24px; border-radius: 999px; color: #fff; background: var(--wine);
     border: 0; box-shadow: 0 10px 24px -10px rgba(125,46,61,.6); transition: transform .3s var(--ease), box-shadow .3s ease;
   }
-  .btn::after { content: ""; position: absolute; top: 0; bottom: 0; width: 40%; left: -60%; background: linear-gradient(100deg, transparent, rgba(255,255,255,.35), transparent); animation: shine 3.5s ease-in-out infinite; }
+  .btn::after { content: ""; position: absolute; top: 0; bottom: 0; width: 40%; left: 0; background: linear-gradient(100deg, transparent, rgba(255,255,255,.35), transparent); transform: translateX(-150%); animation: shine 3.5s ease-in-out infinite; }
   .btn:hover { transform: translateY(-2px); box-shadow: 0 14px 28px -10px rgba(125,46,61,.7); }
   .btn.ghost { background: transparent; color: var(--wine); border: 1px solid rgba(125,46,61,.45); box-shadow: none; }
   .btn.ghost::after { display: none; }
@@ -307,11 +310,11 @@
   .music {
     position: fixed; right: 18px; bottom: calc(18px + env(safe-area-inset-bottom)); z-index: 100;
     width: 52px; height: 52px; border-radius: 50%; border: 1px solid rgba(184,146,74,.5);
-    background: rgba(255,253,249,.85); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    background: rgba(255,253,249,.94);
     display: grid; place-items: center; cursor: pointer; color: var(--wine);
     box-shadow: 0 10px 24px -12px rgba(58,42,46,.4);
   }
-  .music { animation: rise .8s var(--ease) backwards; scale: calc(1 + var(--beat, 0) * .08); transition: transform .3s var(--ease); }
+  .music { animation: rise .8s var(--ease) backwards; transition: transform .3s var(--ease); }
   .music:hover { transform: translateY(-2px); }
   .music .icon { width: 18px; height: 18px; position: relative; z-index: 1; }
   .music .icon.play { margin-left: 3px; }
@@ -319,25 +322,27 @@
   .music .ring circle { fill: none; stroke-width: 2; }
   .music .ring .track { stroke: rgba(184,146,74,.15); }
   .music .ring .prog { stroke: var(--gold); stroke-linecap: round; transition: stroke-dashoffset .3s linear; }
-  .music .ping { position: absolute; inset: 0; border-radius: 50%; border: 1px solid var(--gold); animation: ping 2.5s cubic-bezier(0,0,.2,1) infinite; }
-  /* equalizer bars: follow bass hits (--b0..--b3); gentle CSS sway when the song can't be analysed */
+  /* equalizer bars: JS scales them on bass hits; gentle CSS sway when the song can't be analysed */
   .music .bars { position: relative; z-index: 1; display: flex; align-items: flex-end; gap: 3px; height: 18px; }
-  .music .bars i { width: 3px; height: 100%; border-radius: 2px; background: linear-gradient(var(--gold), var(--wine)); transform-origin: bottom; transform: scaleY(var(--h, .3)); animation: eq 1s ease-in-out infinite; }
-  .music .bars i:nth-child(1) { --h: var(--b0); animation-delay: -.2s; }
-  .music .bars i:nth-child(2) { --h: var(--b1); animation-delay: -.6s; }
-  .music .bars i:nth-child(3) { --h: var(--b2); animation-delay: -.4s; }
-  .music .bars i:nth-child(4) { --h: var(--b3); animation-delay: -.8s; }
+  .music .bars i { width: 3px; height: 100%; border-radius: 2px; background: linear-gradient(var(--gold), var(--wine)); transform-origin: bottom; transform: scaleY(.3); animation: eq 1s ease-in-out infinite; will-change: transform; }
+  .music .bars i:nth-child(1) { animation-delay: -.2s; }
+  .music .bars i:nth-child(2) { animation-delay: -.6s; }
+  .music .bars i:nth-child(3) { animation-delay: -.4s; }
+  .music .bars i:nth-child(4) { animation-delay: -.8s; }
   .audio-live .music .bars i { animation: none; }
   .music.playing:hover .bars, .music:not(.playing) .bars { display: none; }
   .music .icon.pause, .music.playing .icon.play { display: none; }
   .music.playing:hover .icon.pause { display: block; }
 
   /* ---------- Beat-reactive touches (--beat 0..1 is driven by the song's bass) ---------- */
-  .frame { scale: calc(1 + var(--beat, 0) * .025); }
-  .frame .outline { box-shadow: 0 0 calc(var(--beat, 0) * 26px) rgba(226,200,143,.85); }
-  .names .amp, .divider .heart-svg, .story .closing .heart-svg, .footer .sig i { scale: calc(1 + var(--beat, 0) * .22); }
-  .card { box-shadow: 0 24px 50px -24px rgba(58,42,46,.25), 0 0 calc(var(--beat, 0) * 30px) rgba(236,201,195,.55); }
-  .cd svg.ring { scale: calc(1 + var(--beat, 0) * .05); }
+  /* JS writes `scale` (and the glow's opacity) straight onto these elements; each gets its own
+     GPU layer so a pulse never triggers layout or repaint */
+  [data-beat] { will-change: scale; }
+  .footer .sig i { display: inline-block; }
+  .frame .glow {
+    position: absolute; inset: -12px; border-radius: 999px 999px 26px 26px; pointer-events: none;
+    box-shadow: 0 0 26px rgba(226,200,143,.85); opacity: 0; will-change: opacity;
+  }
 
   /* ---------- Keyframes ---------- */
   @keyframes rise { from { opacity: 0; transform: translateY(22px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
@@ -350,8 +355,7 @@
   @keyframes sway { 0%,100% { transform: rotate(-2deg); } 50% { transform: rotate(3deg); } }
   @keyframes beat { 0%,100% { transform: scale(1); } 12% { transform: scale(1.16); } 24% { transform: scale(1); } 36% { transform: scale(1.1); } 48% { transform: scale(1); } }
   @keyframes scan { 0%,100% { transform: translateY(0); } 50% { transform: translateY(166px); } }
-  @keyframes shine { 0%, 60% { left: -60%; } 100% { left: 130%; } }
-  @keyframes ping { 75%,100% { transform: scale(1.8); opacity: 0; } }
+  @keyframes shine { 0%, 60% { transform: translateX(-150%); } 100% { transform: translateX(330%); } }
   @keyframes eq { 0%,100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
   @keyframes tick { from { transform: translateY(-8px); opacity: .3; } to { transform: none; opacity: 1; } }
 
@@ -430,7 +434,7 @@
       <p class="eyebrow reveal">Together with their families</p>
 
       <div class="frame reveal" id="frame">
-        <span class="outline o2"></span><span class="outline"></span>
+        <span class="glow" id="frame-glow"></span><span class="outline o2"></span><span class="outline"></span>
         <div class="photo"><img src="assets/couple.jpg" alt="Ali and Suzy's hands making a heart over the bridal bouquet"></div>
         <svg class="sprig bl" viewBox="0 0 130 130" aria-hidden="true"><g class="sprig-sway">
           <path pathLength="1" d="M10 125C30 100 50 70 92 30"/>
@@ -554,7 +558,6 @@
 <!-- Music: Tamer Hosny – Helm Seneen -->
 <audio id="music" src="assets/song.mp3" loop preload="auto"></audio>
 <button class="music hidden" id="music-btn" aria-label="Play music" aria-pressed="false">
-  <span class="ping hidden" id="music-ping"></span>
   <svg class="ring" viewBox="0 0 54 54" aria-hidden="true"><circle class="track" cx="27" cy="27" r="25"/><circle class="prog" id="music-prog" cx="27" cy="27" r="25"/></svg>
   <svg class="icon play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5Z"/></svg>
   <svg class="icon pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h3.2v14H7zM13.8 5H17v14h-3.2z"/></svg>
@@ -578,7 +581,6 @@
   // --- Music (button appears only once the song file exists) ---
   const audio = document.getElementById("music");
   const musicBtn = document.getElementById("music-btn");
-  const ping = document.getElementById("music-ping");
   const prog = document.getElementById("music-prog");
   const RING = 2 * Math.PI * 25;
   prog.style.strokeDasharray = RING;
@@ -587,7 +589,6 @@
 
   function setPlaying(on) {
     playing = on;
-    ping.classList.toggle("hidden", !on);
     musicBtn.classList.toggle("playing", on);
     musicBtn.setAttribute("aria-pressed", on);
     musicBtn.setAttribute("aria-label", on ? "Pause music" : "Play music");
@@ -610,13 +611,26 @@
   // Only over http(s): a page opened as a local file can't be analysed and would play silently.
   const BASS_LO = 45, BASS_HI = 95;   // tight kick/sub band in Hz
   const REFRACTORY = 0.3;             // seconds: ignore re-triggers inside one bass note
-  const rootStyle = document.documentElement.style;
+  // elements that pulse, with how strongly each one scales on a full hit
+  const beatTargets = [
+    [".frame", .025], [".names .amp", .22], [".divider .heart-svg", .22],
+    [".story .closing .heart-svg", .22], [".footer .sig i", .22], [".cd svg.ring", .05]
+  ].flatMap(([sel, amt]) => [...document.querySelectorAll(sel)].map(el => (el.dataset.beat = "", { el, amt })));
+  const frameGlow = document.getElementById("frame-glow");
+  const bars = [...document.querySelectorAll(".music .bars i")];
+  let shownBeat = -1;
+  function renderBeat() {
+    if (Math.abs(beat - shownBeat) < 0.004) return;   // nothing visible changed: touch nothing
+    shownBeat = beat;
+    for (const { el, amt } of beatTargets) el.style.scale = 1 + beat * amt;
+    frameGlow.style.opacity = beat;
+  }
   let actx = null, analyser = null, freq = null, binLo = 0, binHi = 0;
   let beat = 0, bassAvg = 0, bassPrev = 0, bassMax = 0.1, hitTime = -10, hitAmp = 0;
   function initAnalyser() {
     if (actx || reduceMotion || !location.protocol.startsWith("http")) return;
     try {
-      actx = new (window.AudioContext || window.webkitAudioContext)();
+      actx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: "playback" });
       analyser = actx.createAnalyser();
       analyser.fftSize = 2048;                 // ~23 Hz per bin: fine enough to isolate the sub-bass
       analyser.smoothingTimeConstant = 0.2;    // low smoothing keeps the hits sharp
@@ -637,7 +651,7 @@
   }
   function updateBeat() {
     if (!analyser || !playing) {
-      if (beat < 0.001) return;
+      if (beat < 0.001) { if (shownBeat !== 0) { beat = 0; renderBeat(); } return; }
       beat *= 0.9;
     } else {
       analyser.getByteFrequencyData(freq);
@@ -657,10 +671,10 @@
       bassPrev = e;
       beat = hitAmp * pulse(now - hitTime);
       // equalizer bars ripple one after another from each bass hit
-      for (let i = 0; i < 4; i++)
-        rootStyle.setProperty("--b" + i, (0.2 + 0.8 * hitAmp * pulse(now - hitTime - i * 0.05)).toFixed(3));
+      if (now - hitTime < 0.6)
+        bars.forEach((b, i) => { b.style.transform = `scaleY(${(0.2 + 0.8 * hitAmp * pulse(now - hitTime - i * 0.05)).toFixed(3)})`; });
     }
-    rootStyle.setProperty("--beat", beat.toFixed(3));
+    renderBeat();
   }
 
   // --- Falling petals + burst ---
@@ -683,10 +697,10 @@
     return p;
   }
   function resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     canvas.width = innerWidth * dpr; canvas.height = innerHeight * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const count = reduceMotion ? 0 : innerWidth < 768 ? 16 : 28;
+    const count = reduceMotion ? 0 : innerWidth < 768 ? 12 : 26;
     petals = Array.from({ length: count }, () => makePetal());
   }
   function burst(x, y, n = 36) { if (!reduceMotion) for (let i = 0; i < n; i++) petals.push(makePetal({ x, y })); }
